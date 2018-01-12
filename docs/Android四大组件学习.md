@@ -2,6 +2,8 @@
 
 其实可以从`AndroidManifest.xml`这个文件可以知道, 一般我们可以在`AndroidManifest.xml`看到:
 
+```
+
   <manifest>
     <application>
       
@@ -35,6 +37,8 @@
       
     </application>  
   </manifest>
+
+```
 
 上面`application`里面的四种元素`activity, service, provider, recevier`便是Android的四大组件了
 
