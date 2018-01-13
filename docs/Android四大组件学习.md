@@ -72,9 +72,55 @@ onRestoreInstanceState()表示状态实例相关恢复, 在activity退回到后�
 
 注: activity的继承关系是: context-contextWrapper->contextThemeWrapper->activity, 所以, 如果哪些方法是context所属的, 那么在activity是可以直接调用的.
 
+---
+
 ## Android四大组件之Service
 
-## Android四大组件之Recevier
+## Android四大组件之Receiver
+
+这里的receiver实际上是BroadcastReceiver, 即广播接收者, 在说明广播接收者之前, 先要知道广播相关:
+
+广播分为两种, 一种是普通广播Context.SendBroadcast(), 另一种是有序广播Context.SendOrderedBroadcast(), 普通广播的话所有的广播接收者都能接收到广播, 但是没法做到传递广播(比如接收者1接收对广播先做一些数据处理, 再让接收者2接收到处理后的广播), 并且, 是没有办法用abortBroadcast()终止广播的; 而有序广播, 需要对广播接收者进行配置(在`AndroidManifest.xml`中), 并且配置`android:priority`属性, 并且该属性的值在-1000到1000之间, 越高表示接收次序越前, 此外, 对于有序广播, 是可以设置权限的, 对于没有设置对应权限的应用, 可以阻止其接收广播.
+
+而广播接收者的注册, 包括静态注册和动态注册两种, 其中, 静态注册是设置`AndroidManifest.xml`的`receiver`:
+
+```
+ 
+     <receiver android:name = ".StaticBroadcastReceiver">
+       <intent-filter>
+         <action android:name = "com.example.broadcast" />
+         <category android:name = "android.intent.category.DEFAULT" />
+       </intent-filter>
+     </receiver>
+
+```
+
+通过上面的注册, 只要发送对应的广播即可:
+
+```
+
+      Intent intent = new Intent("com.example.broadcast");
+      intent.putExtra("key", "发送广播");
+      SendBroadcast(intent);
+
+```
+
+动态注册, 则是要在代码中进行实例创建并且调用Context.registerReceiver(broadcastReceiver, IntentFilter)实现:
+
+```
+
+      DynamicBroadcastReceiver receiver = new DynamicBroadcastReceiver();
+      IntentFilter intentFilter = new IntentFilter();
+      intentFilter.addAction("com.example.broadcast");
+      registerReceiver(receiver, intentFilter);
+
+```
+
+静态注册的receiver, 要不只能自己决定销毁或由其他client指定销毁, 不随上下文的销毁而销毁, 即为常驻型广播接收者, 而动态注册的receiver依赖于它所注册的上下文环境(比如注册所在地的activity), 这种receiver可由上下文环境决定销毁, 当上下文环境消失时, 这种receiver也随之销毁, 在activity或者service中，要在onDestory()方法或者onPause()方法进行取消注册Context.unregisterReceiver(), 否则会爆出异常(receiver都销毁了还保持着注册状态当然有问题).
+
+关于有序广播, 可以在广播接收者的onReceive(Context context, Intent intent)中进行中断或者修改操作, 其中修改操作调用的是setResultExtra(Bundle), 即需要一个Bundle类实例, 通过putString之类的方法设置值, 然后在下一个广播接收者使用getResultExtra(true).xxx进行获取, 其他比较具体的操作就没怎么了解了.
+
+---
 
 ## Android四大组件之Provider
 
